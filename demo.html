@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style>
+	*{
+		padding:0;
+		margin:0;
+	}
+		#box{
+			width:400px;
+			height:400px;
+			border:1px solid #000;
+			margin:100px auto;
+		}
+		.img_box{
+			width: 100%;
+			height:320px;
+			overflow: hidden;
+			border-bottom: 1px solid #000;
+		}
+		.img_inner_box{
+			width:2000px;
+		}
+		.img_inner_box div{
+			width:399px;
+			text-align: center;
+			line-height: 320px;
+			float:left;
+			border-right: 1px solid #000;
+		}
+		.click_box ul li{
+			height:80px;
+			float:left;
+			list-style: none;
+			width:20%;
+			text-align: center;
+			line-height: 80px;
+			cursor: pointer;
+		}
+		.selected{
+			background:lightblue;
+			font-weight: bold;
+			color:white;
+			font-size: 20px;
+		}
+	</style>
+</head>
+<body>
+<div id="box">
+	<div class="img_box">
+		<div class="img_inner_box">
+			<div>1</div>
+			<div>2</div>
+			<div>3</div>
+			<div>4</div>
+			<div>5</div>
+		</div>
+	</div>
+	<div class="click_box">
+		<ul>
+			<li class="selected">one</li>
+			<li>two</li>
+			<li>three</li>
+			<li>four</li>
+			<li>five</li>
+		</ul>
+	</div>
+</div>
+<script>
+function Lb(ele){
+	this.img_box = ele.getElementsByClassName("img_box")[0];
+	this.img_inner_box = this.img_box.getElementsByClassName('img_inner_box')[0];
+	this.divs = this.img_inner_box.getElementsByTagName('div');
+	this.click_box = ele.getElementsByClassName("click_box")[0];
+	this.lis = this.click_box.getElementsByTagName('li');
+	this.num = 0;
+	this.lock = true;
+	this.timer1;
+	this.timer2;
+	this.init();
+}
+Lb.prototype = {
+	constructor:Lb,
+	init:function(){
+		this.clock();
+		this.clickMove();
+	},
+	moveTo:function(start,end){	
+		var _this = this;
+		this.start = start;
+		this.end = end;
+		this.step = 0;
+		this.everyStep = (end-start)/20;
+		this.timer1 = setInterval(test,20);
+		function test() {
+			_this.move();
+		}
+
+	},
+	move:function(){
+		this.step++;
+		this.img_box.scrollLeft+=this.everyStep;
+		if(this.step>=20){
+			this.lock = true;
+			this.step = 0;
+			clearInterval(this.timer1);
+			this.img_box.scrollLeft = this.end;
+		}
+	},
+	autoMove:function(){
+		this.num++;
+		if(this.num>=this.divs.length){
+			this.num = 0;
+		}
+		if(this.num<0){
+			this.num = this.divs.length-1;
+		}
+		this.moveTo(this.img_box.scrollLeft,this.num*this.divs[0].clientWidth);
+		this.changeColor();
+	},
+	clock:function(){
+		var _this = this;
+		this.timer2 = setInterval(test,3000);
+		function test(){
+			_this.autoMove();
+		}
+	},
+	changeColor:function(){
+		for(var i=0;i<this.lis.length;i++){
+			this.lis[i].className = "";
+		}
+		this.lis[this.num].className = "selected";
+	},
+	clickMove:function(){
+		var _this = this;
+		for(var i=0;i<_this.lis.length;i++){
+			_this.lis[i].onclick = function(){
+				_this.clearClock();
+				for(var j=0;j<_this.lis.length;j++){
+					if(this==_this.lis[j]&&_this.lock){
+						_this.lock = false;
+						_this.num = j;
+						_this.changeColor();
+						_this.moveTo(_this.img_box.scrollLeft,_this.num*_this.divs[0].clientWidth);
+						_this.clock();
+					}
+				}
+			}
+		}
+	},
+	clearClock:function(){
+		if(this.timer2){
+			clearTimeout(this.timer2);
+		}
+	}
+}
+var box = document.getElementById('box');
+var lb = new Lb(box);
+</script>
+</body>
+</html>
